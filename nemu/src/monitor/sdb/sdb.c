@@ -18,6 +18,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+// #include "expr.c"
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
@@ -54,6 +56,21 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args) {
+  char *arg = strtok(args, " ");
+  if (arg == NULL) {
+    cpu_exec(1);
+    return 0;
+  }
+  int n = atoi(arg);
+  cpu_exec(n);
+  return 0;
+}
+
+static int cmd_info(char *args);
+static int cmd_x(char *args);
+static int cmd_p(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -64,10 +81,64 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
+  { "si", "Step In", cmd_si },
+  { "info", "Print Register or Monitor INFO", cmd_info },
+  { "x", "Print Memory", cmd_x },
+  { "p", "calc expr", cmd_p },
+
 
 };
 
 #define NR_CMD ARRLEN(cmd_table)
+
+static int cmd_p(char *args) {
+  bool success = true;
+  long int val = expr(args, &success);
+  assert(success);
+  printf("The result is %ld\n", val);
+  return 0;
+}
+
+
+static int cmd_x(char *args) {
+  char *arg1 = strtok(NULL, " ");
+  char *arg2 = arg1 + strlen(arg1) + 1;
+  if (arg1 == NULL || arg2 == NULL) {
+    printf("Invalid args!\n");
+    return 0;
+  }
+  int n = atoi(arg1);
+  bool success = true;
+  vaddr_t addr = expr(arg2, &success);
+  assert(success);
+  for (int i = 0; i < n; i++) {
+    printf("0x%08x: 0x%08x\n", addr+i*4, vaddr_read(addr+i*4, 4));
+  }
+  return 0;
+}
+
+
+static int cmd_info(char *args) {
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    printf("Please spicify!\n");
+    return 0;
+  }
+  if (strcmp(arg, "r") == 0) {
+    printf("Registers Display:\n");
+    isa_reg_display();
+  }
+  else if (strcmp(arg, "w") == 0) {
+    printf("Watchpoints Display:\n");
+    // isa_monitor_display();
+  }
+  else {
+    printf("Invalid argument!\n");
+  }
+  return 0;
+}
+
 
 static int cmd_help(char *args) {
   /* extract the first argument */

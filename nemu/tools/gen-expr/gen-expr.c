@@ -31,8 +31,36 @@ static char *code_format =
 "  return 0; "
 "}";
 
+
+void gen(char c) {
+  char s[2] = {c, '\0'};
+  strcat(buf, s);
+}
+
+void gen_num() {
+  // generate a random number and append it to buf
+  char num[10];
+  sprintf(num, "%d", rand() % 1000);  // generate a number less than 100
+  strcat(buf, num);
+}
+
+char gen_rand_op() {
+  // generate a random operator and append it to buf
+  char op = "+-*/"[rand() % 4];
+  gen(op);
+  return op;
+}
+
+int choose(int n) {
+  return rand() % n;
+}
+
 static void gen_rand_expr() {
-  buf[0] = '\0';
+  switch (choose(3)) {
+    case 0: gen_num(); break;
+    case 1: gen('('); gen_rand_expr(); gen(')'); break;
+    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -44,6 +72,7 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    buf[0] = '\0';
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
