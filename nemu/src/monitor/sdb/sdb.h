@@ -17,7 +17,17 @@
 #define __SDB_H__
 
 #include <common.h>
+#include <utils.h>
 
-word_t expr(char *e, bool *success);
+long int expr(char *e, bool *success);
+
+void watchpoints_display();
+
+bool set_wp(char *args);
+void del_wp(int n);
+
+// typedef struct watchpoint WP;  
+// WP* new_wp();
+// void free_wp(WP *wp);
 
 #endif

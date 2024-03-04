@@ -22,6 +22,9 @@ typedef struct watchpoint {
   struct watchpoint *next;
 
   /* TODO: Add more members if necessary */
+  char expr[32];
+  int old_val;
+  int val;
 
 } WP;
 
@@ -40,4 +43,64 @@ void init_wp_pool() {
 }
 
 /* TODO: Implement the functionality of watchpoint */
+WP* new_wp() {
+  if (free_ == NULL) {
+    assert(0);
+  }
 
+  WP *wp = free_;
+  free_ = free_->next;
+  wp->next = head;
+  head = wp;
+  return wp;
+}
+
+
+void free_wp(WP *wp) {
+  wp->next = free_;
+  free_ = wp;
+}
+
+bool set_wp(char *args) {
+  if (!args) {
+    return false;
+  }
+  WP *wp = new_wp();
+  strcpy(wp->expr, args);
+  bool success = true;
+  wp->val = expr(wp->expr, &success);
+  if (success) {
+    return true;
+  }
+  return false;
+}
+
+void del_wp(int n) {
+  free_wp(&wp_pool[n]);
+}
+
+void watchpoint_check() {
+  WP* curr = head;
+  while (curr != NULL) {
+    bool success = false;
+    int new_val = expr(curr->expr, &success);
+    if (curr->val != new_val) {
+      Log("Watchpoint %d triggered (expr is %s):", curr->NO, curr->expr);
+      printf("before: %d, after: %d\n", curr->old_val, new_val);
+      curr->old_val = curr->val;
+      curr->val = new_val;
+      nemu_state.state = NEMU_STOP;
+      break;
+    }
+  }
+}
+
+void watchpoints_display() {
+  printf("%10s\t%10s\t%10s\n", "NO", "Expr", "Current Value");
+  WP* curr = head;
+  while (curr != NULL) {
+    printf("%10d\t%10s\t%10d\n", curr->NO, curr->expr, curr->val);
+    curr = curr->next;
+  }
+  printf("\n");
+}

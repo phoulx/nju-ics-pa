@@ -71,6 +71,23 @@ static int cmd_info(char *args);
 static int cmd_x(char *args);
 static int cmd_p(char *args);
 
+static int cmd_w(char *args) {
+  bool success = set_wp(args);
+  assert(success);
+  Log("Watchpoint setted!");
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  char *arg = strtok(NULL, " ");
+  int n = atoi(arg);
+  del_wp(n);
+  Log("Watchpoint deleted!");
+  return 0;
+}
+
+static int cmd_d(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -84,7 +101,9 @@ static struct {
   { "si", "Step In", cmd_si },
   { "info", "Print Register or Monitor INFO", cmd_info },
   { "x", "Print Memory", cmd_x },
-  { "p", "calc expr", cmd_p },
+  { "p", "Calc expr", cmd_p },
+  { "w", "Set watchpoint", cmd_w },
+  { "d", "Delete watchpoint", cmd_d },
 
 
 };
@@ -131,7 +150,7 @@ static int cmd_info(char *args) {
   }
   else if (strcmp(arg, "w") == 0) {
     printf("Watchpoints Display:\n");
-    // isa_monitor_display();
+    watchpoints_display();
   }
   else {
     printf("Invalid argument!\n");
