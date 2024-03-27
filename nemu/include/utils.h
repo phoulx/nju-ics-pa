@@ -74,4 +74,30 @@ uint64_t get_time();
   } while (0)
 
 
+
+// tracer
+#define IRINGBUF_SIZE 10
+
+typedef struct {
+    vaddr_t addr;
+    uint32_t inst;
+} InstEntry;
+
+typedef struct {
+    InstEntry buf[IRINGBUF_SIZE];
+    int current;
+} InstBuffer;
+
+void record_inst(InstEntry *ie);
+void recent_inst_display();
+void init_iringbuf();
+
+
+
+void display_mem_read(paddr_t addr, int len);
+void display_mem_write(paddr_t addr, int len, word_t data);
+
+
+
+
 #endif

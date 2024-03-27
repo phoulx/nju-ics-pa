@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include <isa.h>
+#include <utils.h>
 #include <memory/paddr.h>
 
 void init_rand();
@@ -118,6 +119,9 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Perform ISA dependent initialization. */
   init_isa();
+
+  /* tracer etc.*/
+  init_iringbuf();
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
